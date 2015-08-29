@@ -19,7 +19,7 @@ Alfresco Consulting projects.
 ### Usage
 Usage: cmd [options]
   
-####Available commands are:
+Available commands are:
 rename or rn [--rename.from=repo-amp] --rename.to=new-name
 
     The rename command is used to rename an amp file from one name to another.
