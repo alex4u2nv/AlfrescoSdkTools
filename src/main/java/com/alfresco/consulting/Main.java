@@ -22,26 +22,33 @@ public class Main  implements CommandLineRunner{
     @Value("${usage.general}")
     private String usage;
 
-    protected String short_name;
+    protected String short_name="";
 
     public static void main(String[] args) throws Exception {
-        if (logger.isDebugEnabled())
-        {
-            for(String arg:args) {
-                logger.debug("Arg => " + arg);
-            }
-        }
-
             SpringApplication.run(Main.class, args);
 
     }
 
     public boolean isCliTarget(String ... args) {
         final String packagePath="com.alfresco.consulting.cmds.";
-        if (args.length>0 && (this.getClass().getName().toLowerCase().equals((packagePath+args[0].toLowerCase())) || this.short_name.equals(args[0].toLowerCase())))
+        if (logger.isDebugEnabled()){
+            for (String arg: args) {
+                logger.debug("arg: " + arg);
+            }
+            logger.debug("Shortname: " + this.getShort_name());
+        }
+        if (args!=null && args.length>0 &&
+                (this.getClass().getName().toLowerCase().equals((packagePath+args[0].toLowerCase()))
+                        || this.getShort_name().equals(args[0].toLowerCase())))
             return true;
         return false;
     }
+
+    public String getShort_name() {
+        return short_name;
+    }
+
+
 
     @Override
     public void run(String... args) throws Exception {

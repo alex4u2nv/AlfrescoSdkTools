@@ -37,7 +37,8 @@ public class RemoveExamples extends  Main implements CommandLineRunner, ExitCode
 
     @Value("${file.ignores}")
     String ignores;
-
+    @Value("${short_name.remove_examples}")
+    protected  String short_name;
     private String regex="";
 
 
@@ -47,7 +48,6 @@ public class RemoveExamples extends  Main implements CommandLineRunner, ExitCode
         if (!this.isCliTarget(args))
             return;
 
-        System.out.println("removing example files " + ignores);
         for (String str : exampleFiles.getFiles()) {
             regex+=str+"|";
         }
@@ -64,8 +64,8 @@ public class RemoveExamples extends  Main implements CommandLineRunner, ExitCode
         do
         {
              cont = c.readLine("Proceed to deleting the listed files (Y|N): ");
-        } while (!cont.matches("Y|N"));
-        if (cont.equals("Y")) {
+        } while (!cont.matches("Y|N|y|n"));
+        if (cont.toLowerCase().equals("y")) {
             System.out.println("Deleting Files");
             recursiveDelete(currentDir, true);
             System.out.println("Files Deleted");
@@ -110,6 +110,10 @@ public class RemoveExamples extends  Main implements CommandLineRunner, ExitCode
             }
         }
 
+    }
+    @Override
+    public String getShort_name() {
+        return short_name;
     }
 
     @Override

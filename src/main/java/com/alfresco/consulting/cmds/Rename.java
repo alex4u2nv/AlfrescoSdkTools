@@ -36,8 +36,14 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
     private File to;
 
 
+
+    @Value("${short_name.rename}")
+    protected  String short_name;
+
     @Value("${file.ignores:.|..|overlays|.git|.svn|.hg|alf_data_dev}")
     private String ignores;
+    @Value("${rename.info}")
+    private String rninfo;
 
     int exitCode = 0;
 
@@ -46,6 +52,7 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
     @Override
     public void run(String... args) throws Exception {
         //grr spring runs all CommandLineRunner implementations for now
+
         if (!this.isCliTarget(args))
             return;
 
@@ -54,7 +61,7 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
             else log.debug("to: " + to.getName());
             if (from == null) log.debug("from is null");
             else log.debug("from: " + from.getName());
-            log.debug("Renaming File with args: ");
+
             for (String arg : args) {
                 log.debug("args " + arg);
             }
@@ -66,8 +73,14 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
             return;
         }
 
+        rninfo = rninfo.replaceFirst("_from_",
+                from.getName()).replace("_to_",
+                to.getName());
+
+
+        System.out.println(rninfo);
         try {
-            renameAmp();
+            renameAmpCheck();
             updateXmls(new File("."));
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -76,7 +89,7 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
 
     }
 
-    private void renameAmp() throws Exception {
+    private void renameAmpCheck() throws Exception {
         if (to.exists()) {
             log.fatal(to.getAbsolutePath() + " Already Exists!");
             exitCode=2;
@@ -88,22 +101,25 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
             log.fatal(from + " does not exist!");
             throw new Exception(from.getName() + " does not exist!");
         }
-
-        //rename context dir
-        File contextDir = new File(from.getAbsolutePath()+ File.separator+  REL_CONTEXT_DIR+ from.getName());
-        if (contextDir.exists() && contextDir.isDirectory()) {
-            File toContextDir = new File(from.getAbsolutePath() + File.separator + REL_CONTEXT_DIR + to.getName());
-            if (toContextDir.exists()) {
-                exitCode=4;
-                log.fatal(toContextDir.getAbsolutePath() + " Already Exists!");
-                throw new Exception("Context Dir Already Exists! " + toContextDir.getAbsolutePath());
-            }
-            contextDir.renameTo(toContextDir);
-        }
-
-        //rename amp:
-        from.renameTo(to);
     }
+
+    private File renameFile(File file) {
+        Path path = Paths.get(file.getAbsolutePath());
+        try {
+            log.trace("Renaming file: " + file.getAbsolutePath());
+            return Files.move(path,
+                    path.resolveSibling(
+                            file.getName().replace(from.getName(),to.getName())
+                    )).toFile();
+        } catch (IOException e) {
+            log.error("Could not rename file: " + file.getAbsolutePath());
+            log.debug(e.getStackTrace());
+
+
+        }
+        return file;
+    }
+
 
     @Override
     public int getExitCode() {
@@ -115,8 +131,13 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
             for (File fileItem : file.listFiles()) {
                 if (fileItem.getName().matches(ignores))
                     continue;
-                if (fileItem.isDirectory() || fileItem.getName().matches(".*xml") )
+                //rename file if needed; before updating xml
+                if (fileItem.getName().matches(from.getName()+".*")) {
+                    fileItem=renameFile(fileItem);
+                }
+                if (fileItem.isDirectory() || fileItem.getName().matches(".*xml") ) {
                     updateXmls(fileItem);
+                }
             }
         } else {
             if (log.isTraceEnabled())
@@ -129,5 +150,11 @@ public class Rename extends Main implements CommandLineRunner, ExitCodeGenerator
             if (!content.equals(newContent))
                 Files.write(path, newContent.getBytes(charset));
         }
+
+    }
+
+    @Override
+    public String getShort_name() {
+        return short_name;
     }
 }
