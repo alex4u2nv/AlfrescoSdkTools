@@ -30,7 +30,6 @@ public class TestTruststoreTest extends TestTruststore {
     @Test
     public void testLookup() throws Exception {
         String[] args = new String[]{"tt"};
-        System.out.println(getStore().getAbsolutePath());
         this.run(args);
 
     }
