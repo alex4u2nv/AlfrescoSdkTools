@@ -26,7 +26,7 @@ import java.util.List;
 public class DefaultTrustService implements TrustStoreService {
     Logger log = Logger.getLogger(DefaultTrustService.class);
 
-    @Value("${tt.trust.trusted")
+    @Value("${tt.trust.trusted}")
     String trusted;
     @Override
     public void updateTrustStore() throws Exception {
